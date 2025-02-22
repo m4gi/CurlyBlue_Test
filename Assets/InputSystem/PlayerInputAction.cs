@@ -49,7 +49,7 @@ public partial class @PlayerInputAction: IInputActionCollection2, IDisposable
                     ""name"": ""Jump"",
                     ""type"": ""Value"",
                     ""id"": ""3c7be8f0-fd02-4ee5-be92-5f10f8f93415"",
-                    ""expectedControlType"": """",
+                    ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
