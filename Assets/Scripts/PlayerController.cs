@@ -33,7 +33,10 @@ public class PlayerController : NetworkBehaviour
     private NetworkBool _isJumping { get; set; }
     [Networked]
     private NetworkButtons _previousButtons { get; set; }
-    [Networked] NetworkString<_16> NickName { get; set; }
+    [Networked, OnChangedRender(nameof(OnNicknameChanged))]
+    public NetworkString<_16> NickName { get; set; }
+
+    public string Nickname { get; private set; }
 
     // Animation IDs
     private int _animIDSpeed;
@@ -49,41 +52,49 @@ public class PlayerController : NetworkBehaviour
 
     public override void Spawned()
     {
+
         if (HasInputAuthority)
         {
-            string nickname = Runner.SessionInfo.Properties["Nickname"];
-            SetNickname(nickname);
-            NameText.text = nickname;
+            RPC_SetNickname(PlayerPrefs.GetString("PlayerName"));
         }
+
+        OnNicknameChanged();
     }
 
     public void SetNickname(string newNickname)
     {
-        if (HasInputAuthority)
+        if (HasStateAuthority)
         {
-            Rpc_SetNickname(newNickname);
+            RPC_SetNickname(newNickname);
         }
     }
 
+    private void OnNicknameChanged()
+    {
+        NameText.text = NickName.Value;
+    }
+
     [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
-    public void Rpc_SetNickname(string nickname)
+    private void RPC_SetNickname(string nickname)
     {
         NickName = nickname;
     }
 
     private void LateUpdate()
     {
-        if (HasInputAuthority == false)
-            return;
-
-        CameraPivot.rotation = Quaternion.Euler(Input.LookRotation);
-        Camera.main.transform.SetPositionAndRotation(CameraHandle.position, CameraHandle.rotation);
         Vector3 direction = Camera.main.transform.position - transform.position;
 
         direction.y = 0;
 
         NameText.gameObject.transform.rotation = Quaternion.LookRotation(direction);
         NameText.gameObject.transform.rotation *= Quaternion.Euler(0, 180f, 0);
+
+        if (HasInputAuthority == false)
+            return;
+
+        CameraPivot.rotation = Quaternion.Euler(Input.LookRotation);
+        Camera.main.transform.SetPositionAndRotation(CameraHandle.position, CameraHandle.rotation);
+        
         //NameText.gameObject.transform.LookAt(Camera.main.transform);
     }
 
